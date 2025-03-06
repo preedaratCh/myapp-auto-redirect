@@ -26,7 +26,14 @@ export default function Home() {
       }, 3000);
     }
 
-    window.location.href = appLink;
+    // Check if the URL is valid before redirecting
+    try {
+      new URL(appLink);
+      window.location.href = appLink;
+    } catch {
+      console.error("Invalid URL:", appLink);
+      window.location.href = fallbackUrl;
+    }
   }, []);
 
   return <p>กำลังเปลี่ยนเส้นทาง...</p>;
