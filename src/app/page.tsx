@@ -5,35 +5,27 @@ import { useEffect } from "react";
 export default function Home() {
   useEffect(() => {
     const userAgent = navigator.userAgent || navigator.vendor || (window as unknown as { opera: string }).opera;
-    const fallbackUrl = process.env.NEXT_PUBLIC_FALLBACK_URL ?? "https://chargingc.com";
-    const androidScheme = process.env.NEXT_PUBLIC_APP_ANDROID_SCHEME;
-    const androidPackage = process.env.NEXT_PUBLIC_APP_ANDROID_PACKAGE;
-    const playStoreLink = process.env.NEXT_PUBLIC_PLAY_STORE_LINK ?? "https://play.google.com/store";
-    const iosScheme = process.env.NEXT_PUBLIC_APP_IOS_SCHEME;
-    const appStoreLink = process.env.NEXT_PUBLIC_APP_STORE_LINK ?? "https://apps.apple.com/";
-
-    let appLink = fallbackUrl;
+    let appLink = process.env.NEXT_PUBLIC_FALLBACK_URL ?? "https://chargingc.com";
+    let storeLink = "";
 
     if (/android/i.test(userAgent)) {
-      appLink = `intent://home#Intent;scheme=${androidScheme};package=${androidPackage};end;`;
+      // Android → เปิดแอพถ้ามี / ไป Play Store ถ้าไม่มี
+      appLink = `intent://home#Intent;scheme=${process.env.NEXT_PUBLIC_APP_ANDROID_SCHEME};package=${process.env.NEXT_PUBLIC_APP_ANDROID_PACKAGE};end;`;
+      storeLink = process.env.NEXT_PUBLIC_PLAY_STORE_LINK ?? "https://play.google.com/store";
+    } else if (/iPad|iPhone|iPod/.test(userAgent) && typeof (window as unknown as { MSStream?: unknown }).MSStream === "undefined") {
+      // iOS → ใช้ Deep Link ก่อน แล้วไป App Store ถ้าเปิดไม่ได้
+      appLink = `${process.env.NEXT_PUBLIC_APP_IOS_SCHEME}://home`;
+      storeLink = process.env.NEXT_PUBLIC_APP_STORE_LINK ?? "https://apps.apple.com/";
+      
+      // เปิดแอพก่อน ถ้าไม่ได้ให้เปิด App Store
+      window.location.href = appLink;
       setTimeout(() => {
-        window.location.href = playStoreLink;
-      }, 3000);
-    } else if (/iPad|iPhone|iPod/.test(userAgent) && !('MSStream' in window)) {
-      appLink = `${iosScheme}://home`;
-      setTimeout(() => {
-        window.location.href = appStoreLink;
-      }, 3000);
+        window.location.href = storeLink;
+      }, 2000);
+      return;
     }
 
-    // Check if the URL is valid before redirecting
-    try {
-      new URL(appLink);
-      window.location.href = appLink;
-    } catch {
-      console.error("Invalid URL:", appLink);
-      window.location.href = fallbackUrl;
-    }
+    window.location.href = appLink;
   }, []);
 
   return <p>กำลังเปลี่ยนเส้นทาง...</p>;
