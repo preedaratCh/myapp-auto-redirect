@@ -14,7 +14,7 @@ export default function Home() {
       storeLink = process.env.NEXT_PUBLIC_PLAY_STORE_LINK ?? "https://play.google.com/store";
     } else if (/iPad|iPhone|iPod/.test(userAgent) && typeof (window as unknown as { MSStream?: unknown }).MSStream === "undefined") {
       // iOS → ใช้ Deep Link ก่อน แล้วไป App Store ถ้าเปิดไม่ได้
-      appLink = `${process.env.NEXT_PUBLIC_APP_IOS_SCHEME}://home`;
+      appLink = `${process.env.NEXT_PUBLIC_APP_IOS_SCHEME}`;
       storeLink = process.env.NEXT_PUBLIC_APP_STORE_LINK ?? "https://apps.apple.com/";
       
       // เปิดแอพก่อน ถ้าไม่ได้ให้เปิด App Store
