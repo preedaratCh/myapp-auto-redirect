@@ -9,24 +9,29 @@ export default function Home() {
     let storeLink = "";
 
     if (/android/i.test(userAgent)) {
-      // Android → เปิดแอพถ้ามี / ไป Play Store ถ้าไม่มี
       appLink = `intent://home#Intent;scheme=${process.env.NEXT_PUBLIC_APP_ANDROID_SCHEME};package=${process.env.NEXT_PUBLIC_APP_ANDROID_PACKAGE};end;`;
       storeLink = process.env.NEXT_PUBLIC_PLAY_STORE_LINK ?? "https://play.google.com/store";
-    } else if (/iPad|iPhone|iPod/.test(userAgent) && typeof (window as unknown as { MSStream?: unknown }).MSStream === "undefined") {
-      // iOS → ใช้ Deep Link ก่อน แล้วไป App Store ถ้าเปิดไม่ได้
-      appLink = `${process.env.NEXT_PUBLIC_APP_IOS_SCHEME}`;
+    } else if (/iPad|iPhone|iPod/.test(userAgent) && !("MSStream" in window)) {
+      // ใช้ Deep Link เพื่อเปิดแอพ
+      appLink = `${process.env.NEXT_PUBLIC_APP_IOS_SCHEME}://home`;
       storeLink = process.env.NEXT_PUBLIC_APP_STORE_LINK ?? "https://apps.apple.com/";
-      
-      // เปิดแอพก่อน ถ้าไม่ได้ให้เปิด App Store
-      window.location.href = appLink;
+
+      // สร้าง iframe เพื่อเปิดแอพ
+      const iframe = document.createElement("iframe");
+      iframe.style.display = "none";
+      iframe.src = appLink;
+      document.body.appendChild(iframe);
+
+      // ถ้าเปิดแอพไม่ได้ภายใน 2 วินาที → ไป App Store
       setTimeout(() => {
         window.location.href = storeLink;
       }, 2000);
+
       return;
     }
 
     window.location.href = appLink;
   }, []);
 
-  return <p>กำลังเปลี่ยนเส้นทาง...</p>;
+  return <p>กำลังเปิดแอพ...</p>;
 }
